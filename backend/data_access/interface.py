@@ -1,52 +1,113 @@
 """
-Data-access module — Phase 0 stubs.
+Data-access module — the ONLY SQL layer.
 
-This is the ONLY SQL layer. Workflows and the rule engine never run SQL directly;
-they call these functions. Phase 0 stubs raise NotImplementedError.
-Phase 1 replaces each stub with a real SQLite implementation against pilot.db.
+Workflows and the rule engine never run SQL directly; they call these functions.
+All reads go through get_pilot_conn() (read-only). No SQL outside this file.
 
-Function signatures are the authoritative interface contract for Phase 1.
+CPT data limitation (PRD §10): CPT codes are AMA-licensed and not in pilot.db.
+lookup_code() detects CPT code_type and returns a category-level fallback dict.
 """
+
+from backend.db.pilot import get_pilot_conn
 
 
 def lookup_code(code_type: str, code: str) -> dict | None:
     """
     Look up a medical code in Family A (codes table).
 
-    Args:
-        code_type: e.g. "ICD10CM", "HCPCS", "revenue", "CARC", "RARC"
-        code:      the code string as read from the bill/EOB
-
-    Returns:
-        dict with at minimum {code, code_type, description, source_id}, or None if not found.
-        CPT codes return a category-level fallback only (PRD §10 — AMA license boundary).
+    Returns dict with {code, code_type, description, short_description, source_id},
+    or None if not found.
+    CPT codes return a fallback dict with a "fallback" key (AMA license boundary).
     """
-    raise NotImplementedError("lookup_code — implement in Phase 1")
+    if code_type.upper() == "CPT":
+        return {
+            "code": code,
+            "code_type": "CPT",
+            "description": None,
+            "short_description": None,
+            "fallback": (
+                "CPT codes are AMA-licensed and not available in this system. "
+                "Category-level information only."
+            ),
+            "source_id": "a04_cpt_handling",
+        }
+
+    with get_pilot_conn() as conn:
+        row = conn.execute(
+            "SELECT code_type, code, description, short_description, source_id "
+            "FROM codes WHERE code_type = ? AND code = ? LIMIT 1",
+            (code_type, code),
+        ).fetchone()
+
+    return dict(row) if row else None
 
 
 def search_plan(query: str, state: str | None = None) -> list[dict]:
     """
     Search for a health plan by name, issuer, or HIOS ID (Family B).
 
-    Args:
-        query: free-text or ID fragment
-        state: optional two-letter state code to narrow results
-
-    Returns:
-        List of matching plan dicts (may be empty).
+    Returns up to 20 matching plan dicts ordered by plan_year DESC.
     """
-    raise NotImplementedError("search_plan — implement in Phase 1")
+    like_q = f"%{query}%"
+    with get_pilot_conn() as conn:
+        rows = conn.execute(
+            "SELECT plan_id, plan_name, issuer_id, issuer_name, state, "
+            "       metal_level, plan_year, plan_type "
+            "FROM plans "
+            "WHERE (plan_id LIKE ? OR plan_name LIKE ? OR issuer_name LIKE ?) "
+            "  AND (? IS NULL OR state = ?) "
+            "ORDER BY plan_year DESC "
+            "LIMIT 20",
+            (like_q, like_q, like_q, state, state),
+        ).fetchall()
+    return [dict(r) for r in rows]
 
 
 def get_sbc_fields(plan_id: str) -> dict | None:
     """
-    Retrieve Summary of Benefits and Coverage fields for a plan (Family F).
+    Retrieve benefit fields for a plan.
 
-    Returns:
-        dict of SBC field values, or None if not found.
-        Falls back to plan_attributes (Family B) when SBC fields are absent (~2,326 of ~5,290 plans have SBC data).
+    Tries SBC (Family F) first; falls back to plan_attributes (Family B).
+    Returns a dict keyed by field name. The "_source" key indicates which
+    table was used ("sbc" or "plan_attributes"). Returns None if no data found.
     """
-    raise NotImplementedError("get_sbc_fields — implement in Phase 1")
+    with get_pilot_conn() as conn:
+        # Try SBC first (~2,326 of 5,290 plans have SBC data)
+        sbc_rows = conn.execute(
+            "SELECT sf.field_name, sf.field_value, sf.confidence "
+            "FROM sbc_documents sd "
+            "JOIN sbc_fields sf ON sf.sbc_document_id = sd.id "
+            "WHERE sd.plan_id = ? "
+            "ORDER BY sf.field_name",
+            (plan_id,),
+        ).fetchall()
+
+        if sbc_rows:
+            return {
+                "_source": "sbc",
+                **{
+                    r["field_name"]: {
+                        "value": r["field_value"],
+                        "confidence": r["confidence"],
+                    }
+                    for r in sbc_rows
+                },
+            }
+
+        # Fallback: plan_attributes (more complete for deductible/OOP)
+        attr_rows = conn.execute(
+            "SELECT attribute_name, attribute_value "
+            "FROM plan_attributes WHERE plan_id = ?",
+            (plan_id,),
+        ).fetchall()
+
+        if attr_rows:
+            return {
+                "_source": "plan_attributes",
+                **{r["attribute_name"]: r["attribute_value"] for r in attr_rows},
+            }
+
+    return None
 
 
 def get_ambulance_reference_rate(
@@ -57,29 +118,63 @@ def get_ambulance_reference_rate(
     """
     Get the Medicare reference rate for a ground ambulance HCPCS code.
 
-    reference_rate is stored as integer cents in ambulance_fee_schedule.
-    Returns {hcpcs, geo_level, geo_key, reference_rate_cents, reference_rate_dollars,
-             effective_year, source_id}, or None if no matching rate found.
+    reference_rate is stored as integer cents; this function adds
+    reference_rate_dollars = reference_rate / 100 to the returned dict.
+    Returns None if no matching rate found.
     """
-    raise NotImplementedError("get_ambulance_reference_rate — implement in Phase 1")
+    with get_pilot_conn() as conn:
+        row = conn.execute(
+            "SELECT hcpcs, geo_level, geo_key, reference_rate, effective_year, source_id "
+            "FROM ambulance_fee_schedule "
+            "WHERE hcpcs = ? AND geo_level = ? AND geo_key = ? "
+            "ORDER BY effective_year DESC LIMIT 1",
+            (hcpcs, geo_level, state.upper()),
+        ).fetchone()
+
+    if row is None:
+        return None
+
+    result = dict(row)
+    result["reference_rate_dollars"] = result["reference_rate"] / 100
+    return result
 
 
 def get_nsa_rules(categories: list[str]) -> list[dict]:
     """
     Retrieve NSA rules for the given category list (e.g. ["A", "B", "K"]).
 
-    Returns rows from nsa_rules ordered by category then rule_id.
-    Only returns rows regardless of status; callers must respect the
-    counsel_approved gate before surfacing definitive UI determinations (PRD §6.7).
+    Returns all matching rows ordered by category ASC, rule_id ASC.
+    Callers must check status == "counsel_approved" before surfacing
+    definitive UI determinations (PRD §6.7). All 59 rules are currently
+    status="draft" (awaiting counsel review).
     """
-    raise NotImplementedError("get_nsa_rules — implement in Phase 1")
+    if not categories:
+        return []
+
+    placeholders = ",".join("?" * len(categories))
+    with get_pilot_conn() as conn:
+        rows = conn.execute(
+            f"SELECT * FROM nsa_rules "  # noqa: S608
+            f"WHERE category IN ({placeholders}) "
+            f"ORDER BY category ASC, rule_id ASC",
+            categories,
+        ).fetchall()
+
+    return [dict(r) for r in rows]
 
 
 def resolve_source(source_id: str) -> dict | None:
     """
-    Resolve a source_id to its full citation record from the sources table.
+    Resolve a source_id to its full citation record.
 
-    Returns {source_id, publisher, canonical_url, license, refresh_cadence, notes},
+    Returns {source_id, publisher, canonical_url, license, refresh_cadence, notes}
     or None if source_id not found.
     """
-    raise NotImplementedError("resolve_source — implement in Phase 1")
+    with get_pilot_conn() as conn:
+        row = conn.execute(
+            "SELECT source_id, publisher, canonical_url, license, refresh_cadence, notes "
+            "FROM sources WHERE source_id = ?",
+            (source_id,),
+        ).fetchone()
+
+    return dict(row) if row else None
