@@ -1,0 +1,27 @@
+# Escalation threshold and complexity-flag configuration (PRD §8.1, §4.3).
+# Triage engine reads this file; adding a flag here is the only change needed.
+
+severity_bands:
+  minor:
+    label: "minor"
+    max_dollars: 499.99
+  moderate:
+    label: "moderate"
+    min_dollars: 500
+    max_dollars: 4999.99
+  high:
+    label: "high"
+    min_dollars: 5000
+    max_dollars: 24999.99
+  catastrophic:
+    label: "catastrophic"
+    min_dollars: 25000
+
+# Complexity flags that trigger an escalation recommendation.
+complexity_flags:
+  - human_review_rule_matched
+  - notice_and_consent_dispute
+  - self_funded_erisa_state_law_conflict
+  - unknown_inputs_on_load_bearing_fields
+  - unrecoverable_workflow_failure
+  - catastrophic_severity

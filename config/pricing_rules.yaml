@@ -1,0 +1,18 @@
+# Escalation gate configuration — edit this file to change fees; no code changes needed.
+# Values below are placeholders pending the monetization decision (PRD §9).
+
+member:
+  escalation_fee_default: "service_charge"
+  waived_tiers:
+    - "Emergency Shield Plus"
+    - "Lifetime"
+  message_charged: >
+    A service charge applies for human escalation on your plan tier.
+    A MASA advocate will review your case.
+  message_waived: >
+    Human escalation is included with your plan. A MASA advocate will review your case.
+
+non_member:
+  # Future state — not exercised in the member-only prototype.
+  ai_service: "$5/month (covers all SAM AI products)"
+  escalation_fee: "service_charge"
