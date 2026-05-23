@@ -1,0 +1,126 @@
+/* MASA Brand CSS Variables — from masa-brand skill */
+:root {
+  --masa-horizon: #230871;
+  --masa-tide: #0071CE;
+  --masa-flare: #E64B38;
+  --masa-shine: #FFD040;
+  --masa-harbor: #968694;
+  --masa-harbor-tint: #E8E3E8;
+  --masa-body: #262626;
+  --masa-white: #FFFFFF;
+
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Open Sans', sans-serif;
+
+  --radius-card: 8px;
+  --radius-button: 4px;
+  --radius-bubble: 12px;
+  --shadow-card: 0 2px 8px rgba(35, 8, 113, 0.10);
+  --shadow-modal: 0 8px 32px rgba(35, 8, 113, 0.20);
+
+  --max-width: 800px;
+  --chat-padding: 1.25rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #f5f4f7;
+  color: var(--masa-body);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  color: var(--masa-horizon);
+  margin: 0 0 0.5rem;
+}
+
+a { color: var(--masa-tide); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius-button);
+  transition: opacity 0.15s, transform 0.1s;
+}
+button:hover { opacity: 0.88; }
+button:active { transform: scale(0.98); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+input, textarea, select {
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+/* Utility classes */
+.btn-primary {
+  background: var(--masa-tide);
+  color: var(--masa-white);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: var(--radius-button);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--masa-tide);
+  border: 2px solid var(--masa-tide);
+  padding: 0.65rem 1.4rem;
+  font-size: 1rem;
+}
+
+.btn-horizon {
+  background: var(--masa-horizon);
+  color: var(--masa-white);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: var(--radius-button);
+}
+
+.card {
+  background: var(--masa-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--masa-harbor-tint);
+  color: var(--masa-horizon);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+}
+
+/* Severity badges */
+.badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; font-family: var(--font-heading); }
+.badge-minor    { background: #e8f5e9; color: #2e7d32; }
+.badge-moderate { background: #fff3e0; color: #e65100; }
+.badge-high     { background: #fce4ec; color: #c62828; }
+.badge-catastrophic { background: #f3e5f5; color: #6a1b9a; }
+.badge-unknown  { background: var(--masa-harbor-tint); color: var(--masa-harbor); }
+
+/* Status badges */
+.badge-requested    { background: #e3f2fd; color: #1565c0; }
+.badge-recommended  { background: #fff8e1; color: #f57f17; }
+.badge-in_queue     { background: #e8f5e9; color: #2e7d32; }
+.badge-none         { background: var(--masa-harbor-tint); color: var(--masa-harbor); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--masa-harbor-tint); border-radius: 3px; }

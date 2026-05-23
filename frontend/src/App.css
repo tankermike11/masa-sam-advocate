@@ -1,9 +1,1 @@
-/* Phase 0 — minimal reset. Styles will be built in Phase 1+. */
-* {
-  box-sizing: border-box;
-}
-body {
-  margin: 0;
-  background: #f9f9f9;
-  color: #1a1a1a;
-}
+/* Minimal reset — brand styles live in src/styles/brand.css */

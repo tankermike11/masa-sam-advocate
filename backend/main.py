@@ -21,6 +21,7 @@ from backend.db.app_db import get_app_db_path, init_app_db
 from backend.db.pilot import get_pilot_db_path
 from backend.db.preconditions import PreconditionError, check_preconditions
 from backend.routers.cases import router as cases_router
+from backend.routers.codes import router as codes_router
 from backend.routers.escalation import router as escalation_router
 from backend.routers.health import router as health_router
 from backend.routers.workflows import router as workflows_router
@@ -65,3 +66,4 @@ app.include_router(health_router)
 app.include_router(cases_router)
 app.include_router(workflows_router)
 app.include_router(escalation_router)
+app.include_router(codes_router)

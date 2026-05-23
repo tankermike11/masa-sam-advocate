@@ -28,7 +28,10 @@
       "Bash(/c/Users/mabka/AppData/Local/Python/pythoncore-3.14-64/python)",
       "Bash(/c/Users/mabka/AppData/Local/Python/pythoncore-3.14-64/python -c \"import sys; sys.stdout.reconfigure\\(encoding='utf-8'\\)\")",
       "Bash(xargs grep *)",
-      "Bash(pytest backend/tests/ -v --tb=no -q)"
+      "Bash(pytest backend/tests/ -v --tb=no -q)",
+      "Bash(curl -s -X POST http://localhost:58417/cases/3aaf0400-879e-4024-9354-b11a1a9c762e/workflow2)",
+      "Bash(curl -s -X POST http://localhost:58417/cases/3aaf0400-879e-4024-9354-b11a1a9c762e/escalate -H \"Content-Type: application/json\" -d \"{\\\\\"trigger\\\\\":\\\\\"member_initiated\\\\\"}\")",
+      "Bash(pytest backend/tests/ -q --tb=no)"
     ]
   }
 }
