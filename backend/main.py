@@ -22,6 +22,7 @@ from backend.db.pilot import get_pilot_db_path
 from backend.db.preconditions import PreconditionError, check_preconditions
 from backend.routers.cases import router as cases_router
 from backend.routers.health import router as health_router
+from backend.routers.workflows import router as workflows_router
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -61,3 +62,4 @@ app = FastAPI(
 
 app.include_router(health_router)
 app.include_router(cases_router)
+app.include_router(workflows_router)
