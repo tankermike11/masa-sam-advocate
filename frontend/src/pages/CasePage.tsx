@@ -8,7 +8,6 @@ import { PROBLEM_LABELS, INSURANCE_LABELS } from '../lib/utils'
 import CardPicker from '../components/intake/CardPicker'
 import YesNoToggle from '../components/intake/YesNoToggle'
 import RadioGroup from '../components/intake/RadioGroup'
-import CurrencyInput from '../components/intake/CurrencyInput'
 import CodeSearchWidget from '../components/intake/CodeSearchWidget'
 import NetworkStatusPicker from '../components/intake/NetworkStatusPicker'
 import AnswerCardComponent from '../components/answer/AnswerCard'
@@ -369,6 +368,71 @@ function MemberBubble({ children }: { children: React.ReactNode }) {
   )
 }
 
+// Holds its own local state so typing doesn't advance the step on every keystroke.
+// Only calls onAnswer when the user explicitly clicks Continue or presses Enter.
+function CurrencyStepWidget({ field, onAnswer, onSkip }: {
+  field: string
+  onAnswer: (f: string, v: unknown) => void
+  onSkip?: () => void
+}) {
+  const [localValue, setLocalValue] = useState<number | null>(null)
+  const [skipped, setSkipped] = useState(false)
+
+  const handleContinue = () => {
+    if (localValue !== null) onAnswer(field, localValue)
+  }
+
+  const handleSkip = () => {
+    setSkipped(true)
+    if (onSkip) onSkip()
+  }
+
+  if (skipped) return null
+
+  return (
+    <div style={{ marginTop: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--masa-horizon)', fontSize: '1.1rem' }}>$</span>
+        <input
+          type="number"
+          min={0}
+          step="0.01"
+          placeholder="0.00"
+          value={localValue ?? ''}
+          onChange={(e) => setLocalValue(e.target.value ? Number(e.target.value) : null)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && localValue !== null) handleContinue() }}
+          style={{
+            border: '2px solid var(--masa-harbor-tint)', borderRadius: 'var(--radius-button)',
+            padding: '0.6rem 0.8rem', fontSize: '1rem', width: '200px',
+            outline: 'none', transition: 'border-color 0.15s',
+          }}
+          onFocus={(e) => (e.target.style.borderColor = 'var(--masa-tide)')}
+          onBlur={(e) => (e.target.style.borderColor = 'var(--masa-harbor-tint)')}
+          autoFocus
+        />
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.6rem', alignItems: 'center' }}>
+        <button
+          onClick={handleContinue}
+          disabled={localValue === null}
+          className="btn-primary"
+          style={{ fontSize: '0.88rem', padding: '0.5rem 1rem' }}
+        >
+          Continue
+        </button>
+        {onSkip && (
+          <button
+            onClick={handleSkip}
+            style={{ background: 'none', border: 'none', color: 'var(--masa-harbor)', fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'var(--font-body)', textDecoration: 'underline' }}
+          >
+            Skip / I don't know
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function StepWidget({ step, intake, onAnswer, onSkip }: {
   step: StepDef
   intake: Record<string, unknown>
@@ -408,15 +472,11 @@ function StepWidget({ step, intake, onAnswer, onSkip }: {
       )
     case 'currency':
       return (
-        <div>
-          <CurrencyInput value={val as number ?? null} onChange={(v) => { if (v !== null) onAnswer(field, v) }} optional={step.optional} />
-          {step.optional && val == null && (
-            <button onClick={onSkip} style={{ marginTop: '0.35rem', background: 'none', border: 'none', color: 'var(--masa-harbor)', fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'var(--font-body)', textDecoration: 'underline' }}>Skip</button>
-          )}
-          {val != null && (
-            <button onClick={() => onAnswer(field, val)} className="btn-primary" style={{ marginTop: '0.5rem', fontSize: '0.88rem', padding: '0.5rem 1rem' }}>Continue</button>
-          )}
-        </div>
+        <CurrencyStepWidget
+          field={field}
+          onAnswer={onAnswer}
+          onSkip={step.optional ? onSkip : undefined}
+        />
       )
     case 'text':
       return (
