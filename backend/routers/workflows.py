@@ -1,11 +1,11 @@
 """
-Workflow endpoints — POST /cases/{case_id}/workflow1 and /workflow2.
+Workflow endpoints — POST /cases/{case_id}/workflow1 through /workflow5.
 
 Each endpoint:
   1. Fetches the existing case from app.db (404 if not found)
   2. Deserializes the stored intake and triage_result
   3. Runs the appropriate workflow
-  4. Updates the case's workflow_outputs in app.db
+  4. Updates the case's workflow_outputs (and generated_documents for workflow3) in app.db
   5. Returns the AnswerCard
 """
 
@@ -23,6 +23,9 @@ from backend.triage.engine import TriageResult
 from backend.workflows.answer_card import AnswerCard
 from backend.workflows.workflow1 import run_workflow1
 from backend.workflows.workflow2 import run_workflow2
+from backend.workflows.workflow3 import GeneratedDocument, run_workflow3
+from backend.workflows.workflow4 import run_workflow4
+from backend.workflows.workflow5 import run_workflow5
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -94,3 +97,69 @@ def run_workflow_2(case_id: str) -> WorkflowResponse:
     card = run_workflow2(intake, triage_result)
     _update_workflow_outputs(case_id, "workflow_2", card)
     return WorkflowResponse(case_id=case_id, workflow="workflow_2", answer_card=card)
+
+
+def _update_generated_documents(case_id: str, docs: list[GeneratedDocument]) -> None:
+    """Merge generated documents into cases.generated_documents JSON dict."""
+    with get_app_conn() as conn:
+        row = conn.execute(
+            "SELECT generated_documents FROM cases WHERE case_id = ?", (case_id,)
+        ).fetchone()
+        existing: dict = {}
+        if row and row["generated_documents"]:
+            try:
+                existing = json.loads(row["generated_documents"])
+            except (json.JSONDecodeError, TypeError):
+                existing = {}
+        for doc in docs:
+            existing[doc.document_type] = json.loads(doc.model_dump_json())
+        conn.execute(
+            "UPDATE cases SET generated_documents = ? WHERE case_id = ?",
+            (json.dumps(existing), case_id),
+        )
+        conn.commit()
+
+
+@router.post("/cases/{case_id}/workflow3", response_model=WorkflowResponse)
+def run_workflow_3(case_id: str) -> WorkflowResponse:
+    case = _fetch_case(case_id)
+    try:
+        intake = IntakeSubmission.model_validate_json(case["intake"])
+        triage_result = TriageResult.model_validate_json(case["triage_result"])
+    except Exception as exc:
+        logger.error("Failed to parse case data for %r: %s", case_id, exc)
+        raise HTTPException(status_code=422, detail="Stored case data is invalid.") from exc
+
+    card, docs = run_workflow3(intake, triage_result)
+    _update_workflow_outputs(case_id, "workflow_3", card)
+    _update_generated_documents(case_id, docs)
+    return WorkflowResponse(case_id=case_id, workflow="workflow_3", answer_card=card)
+
+
+@router.post("/cases/{case_id}/workflow4", response_model=WorkflowResponse)
+def run_workflow_4(case_id: str) -> WorkflowResponse:
+    case = _fetch_case(case_id)
+    try:
+        intake = IntakeSubmission.model_validate_json(case["intake"])
+    except Exception as exc:
+        logger.error("Failed to parse intake for case %r: %s", case_id, exc)
+        raise HTTPException(status_code=422, detail="Stored intake is invalid.") from exc
+
+    card = run_workflow4(intake)
+    _update_workflow_outputs(case_id, "workflow_4", card)
+    return WorkflowResponse(case_id=case_id, workflow="workflow_4", answer_card=card)
+
+
+@router.post("/cases/{case_id}/workflow5", response_model=WorkflowResponse)
+def run_workflow_5(case_id: str) -> WorkflowResponse:
+    case = _fetch_case(case_id)
+    try:
+        intake = IntakeSubmission.model_validate_json(case["intake"])
+        triage_result = TriageResult.model_validate_json(case["triage_result"])
+    except Exception as exc:
+        logger.error("Failed to parse case data for %r: %s", case_id, exc)
+        raise HTTPException(status_code=422, detail="Stored case data is invalid.") from exc
+
+    card = run_workflow5(intake, triage_result)
+    _update_workflow_outputs(case_id, "workflow_5", card)
+    return WorkflowResponse(case_id=case_id, workflow="workflow_5", answer_card=card)

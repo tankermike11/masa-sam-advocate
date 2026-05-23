@@ -1,0 +1,657 @@
+
+============================================================================================================================================
+CATEGORY A
+============================================================================================================================================
+
+Rule ID: NSA-FED-001
+  Summary: 45 CFR Part 149 applies to group health plans, issuers, providers, facilities, air ambulance providers, IDR entities, SDR entities, and uninsured/self-pay individuals depending on subpart.
+  Prototype Logic: If case involves insured surprise bill, uninsured/self-pay GFE, PPDR, provider/facility balance billing, air ambulance, or plan coverage issue → evaluate Part 149 rules....
+  System Action: Continue federal ruleset evaluation....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-FED-002
+  Summary: Part 149 generally does not apply to excepted benefits, short-term limited-duration insurance, HRAs, or other account-based group health plans.
+  Prototype Logic: If plan type in [excepted_benefit, STLDI, HRA/account_based] → likely outside NSA core rules....
+  System Action: Route to human review; do not make definitive NSA claim....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-FED-003
+  Summary: State law can determine payment amounts when a “specified State law” applies; otherwise federal default rules apply.
+  Prototype Logic: If state has specified state law applicable to service + plan type → use state payment pathway, not federal IDR default....
+  System Action: Route to state-law module/human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-FED-004
+  Summary: An All-Payer Model Agreement can override recognized/out-of-network rate logic where applicable.
+  Prototype Logic: If state/all-payer model applies to plan, provider/facility, and item/service → use all-payer amount....
+  System Action: Route to payment-rule review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY B
+============================================================================================================================================
+
+Rule ID: NSA-EMERG-001
+  Summary: If a plan covers emergency services, it must cover emergency services without prior authorization, including out-of-network emergency services.
+  Prototype Logic: If service_type=emergency and plan_covers_emergency=true and denial reason = no prior authorization → flag possible NSA issue....
+  System Action: Explain + collect EOB, bill, plan document....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-EMERG-002
+  Summary: Emergency services must be covered without regard to whether the provider or emergency facility is participating.
+  Prototype Logic: If emergency service denied/repriced solely because provider/facility was OON → flag....
+  System Action: Explain + route to appeal template....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-EMERG-003
+  Summary: For OON emergency services, administrative requirements/limitations cannot be more restrictive than in-network emergency services.
+  Prototype Logic: If OON emergency claim subject to stricter utilization/admin rules than in-network equivalent → flag....
+  System Action: Human review; possible appeal....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-EMERG-004
+  Summary: OON emergency cost-sharing cannot exceed what would apply in-network.
+  Prototype Logic: If patient cost-share > in-network equivalent → flag likely NSA protection....
+  System Action: Explain likely overbilling; collect EOB/bill....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-EMERG-005
+  Summary: OON emergency cost-sharing is calculated using the “recognized amount,” generally state law/all-payer amount or, absent those, the lesser of QPA or billed amount.
+  Prototype Logic: If cost-share basis appears to use provider full billed charges instead of recognized amount → flag....
+  System Action: Human review; request plan basis/QPA if available....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-EMERG-006
+  Summary: Patient cost-sharing for protected emergency services must count toward in-network deductible and out-of-pocket maximum.
+  Prototype Logic: If EOB shows NSA-covered emergency cost-share not applied to in-network deductible/OOP max → flag....
+  System Action: Generate appeal issue....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY C
+============================================================================================================================================
+
+Rule ID: NSA-NONEMERG-001
+  Summary: OON providers generally cannot balance bill for non-emergency services furnished during a visit at a participating facility unless valid notice and consent applies.
+  Prototype Logic: If facility in-network + provider OON + non-emergency visit + no valid notice/consent → flag....
+  System Action: Explain; collect notice/consent if provider claims waiver....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-NONEMERG-002
+  Summary: Protected non-emergency OON cost-sharing cannot exceed in-network cost-sharing.
+  Prototype Logic: If in-network facility + OON provider bill seeks amount above in-network cost-share → flag....
+  System Action: Explain likely balance-bill protection....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-NONEMERG-003
+  Summary: Cost-sharing for protected non-emergency OON services must be calculated using the recognized amount.
+  Prototype Logic: If patient cost-share appears based on full provider charge rather than recognized amount → flag....
+  System Action: Human review; request EOB detail....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-NONEMERG-004
+  Summary: Protected cost-sharing must count toward in-network deductible and OOP max.
+  Prototype Logic: If not credited to in-network deductible/OOP max → flag appeal issue....
+  System Action: Generate appeal issue....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-NONEMERG-005
+  Summary: Plan/issuer must determine coverage and send initial payment or denial within 30 calendar days after receiving necessary claim information.
+  Prototype Logic: If claim pending >30 days after necessary information received → flag potential timeliness issue....
+  System Action: Human review; generate status inquiry....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY D
+============================================================================================================================================
+
+Rule ID: NSA-CONSENT-001
+  Summary: Notice and consent can permit OON billing only where allowed; it must be voluntary, timely, separate from other documents, and in the HHS-specified form/manner.
+  Prototype Logic: If provider asserts waiver → check timing, form, separate document, voluntary signature, no revocation....
+  System Action: Route to human review unless all structured checks pass....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-CONSENT-002
+  Summary: If appointment scheduled ≥72 hours in advance, notice must be provided at least 72 hours before service.
+  Prototype Logic: If notice timestamp <72 hours before scheduled service and appointment scheduled ≥72 hours before → invalid/flag....
+  System Action: Flag invalid notice/consent....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-CONSENT-003
+  Summary: If appointment scheduled within 72 hours, notice must be provided on scheduling date; if same-day service, at least 3 hours before service.
+  Prototype Logic: If same-day notice <3 hours before service → invalid/flag....
+  System Action: Flag invalid notice/consent....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-CONSENT-004
+  Summary: Consent must be voluntary and free from undue influence, fraud, or duress.
+  Prototype Logic: If patient reports “had to sign to receive care,” emergency pressure, or no meaningful choice → human review....
+  System Action: Human review; possible invalid consent....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-CONSENT-005
+  Summary: Authorized representative may consent, but cannot be facility/provider-affiliated unless also a family member.
+  Prototype Logic: If signer is facility/provider employee or affiliated provider and not family member → flag invalid consent....
+  System Action: Human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY E
+============================================================================================================================================
+
+Rule ID: NSA-NONWAIVE-001
+  Summary: Ancillary services cannot use notice-and-consent exception.
+  Prototype Logic: If OON bill is for emergency medicine, anesthesiology, pathology, radiology, neonatology, assistant surgeon, hospitalist, intensivist, diagnostic radiology/lab, or no in-network provider available → n...
+  System Action: Flag likely unlawful balance bill....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-NONWAIVE-002
+  Summary: Unforeseen urgent medical needs arising at the time of service cannot be balance billed even if notice/consent was obtained.
+  Prototype Logic: If unexpected urgent need arose during service → ignore prior waiver for that item/service....
+  System Action: Human review; flag....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY F
+============================================================================================================================================
+
+Rule ID: NSA-DISCLOSURE-001
+  Summary: Providers/facilities must make public, post online if applicable, and provide a one-page disclosure about balance-billing protections.
+  Prototype Logic: If patient received covered facility/provider services and no disclosure was provided/posted → flag disclosure issue....
+  System Action: Add complaint issue; not necessarily bill invalid by itself....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-DISCLOSURE-002
+  Summary: Disclosure must explain federal protections, applicable state protections, and state/federal contact information.
+  Prototype Logic: If disclosure missing state/federal complaint contacts or clear NSA rights language → flag....
+  System Action: Human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-DISCLOSURE-003
+  Summary: Disclosure must be given by the time payment is requested, or if no payment request, by the date the claim is submitted.
+  Prototype Logic: If disclosure provided only after bill dispute began → flag timing issue....
+  System Action: Add complaint issue....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY G
+============================================================================================================================================
+
+Rule ID: NSA-AIR-001
+  Summary: If air ambulance benefits are covered, OON air ambulance cost-sharing must be same as in-network cost-sharing.
+  Prototype Logic: If covered air ambulance + OON provider + patient billed above in-network cost-share → flag....
+  System Action: Explain likely NSA protection....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-AIR-002
+  Summary: Air ambulance cost-sharing is calculated using the lesser of QPA or billed amount.
+  Prototype Logic: If cost-sharing appears based on full charge not QPA/billed-lower logic → flag....
+  System Action: Human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-AIR-003
+  Summary: Air ambulance cost-sharing must count toward in-network deductible and OOP maximum.
+  Prototype Logic: If not credited → flag appeal issue....
+  System Action: Generate appeal issue....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: NSA-AIR-004
+  Summary: Plan must determine coverage and send initial payment or denial within 30 calendar days after receiving necessary information.
+  Prototype Logic: If claim unresolved beyond 30 days after necessary information received → flag....
+  System Action: Human review/status inquiry....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY H
+============================================================================================================================================
+
+Rule ID: GFE-001
+  Summary: Providers/facilities must provide GFEs to uninsured or self-pay individuals when an item/service is scheduled or when requested.
+  Prototype Logic: If patient uninsured or chose not to use insurance and scheduled/requested service → GFE required....
+  System Action: Ask whether GFE was received; collect copy....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GFE-002
+  Summary: GFE must be written, paper or electronic as requested, saveable/printable if electronic, and in clear understandable language.
+  Prototype Logic: If only oral estimate or non-saveable portal estimate → flag incomplete GFE....
+  System Action: Explain and collect evidence....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GFE-003
+  Summary: GFE must include patient name/DOB, primary item/service, itemized expected services, diagnosis/service codes, expected charges, provider/facility identifiers, and required disclaimers.
+  Prototype Logic: If GFE lacks core content → flag as deficient....
+  System Action: Human review; do not auto-conclude violation....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GFE-004
+  Summary: Co-providers/co-facilities must provide GFE info to the convening provider/facility within 1 business day of request.
+  Prototype Logic: If missing co-provider estimate and provider blames co-provider → route review....
+  System Action: Human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GFE-005
+  Summary: For recurring services, one GFE may cover recurring primary items/services, but scope cannot exceed 12 months.
+  Prototype Logic: If recurring GFE >12 months or no scope/frequency count → flag....
+  System Action: Human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GFE-006
+  Summary: GFE is part of the medical record and copies of GFEs issued within the last 6 years must be provided on request.
+  Prototype Logic: If patient requests prior GFE and provider refuses/cannot supply → flag....
+  System Action: Generate records request....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GFE-007
+  Summary: A GFE error/omission may be excused if made despite good faith and reasonable diligence and corrected as soon as practicable; however PPDR can still apply if services occurred before correction and charges are substantially above estimate.
+  Prototype Logic: If provider claims clerical error → do not auto-decide; check correction timing and PPDR eligibility....
+  System Action: Human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY I
+============================================================================================================================================
+
+Rule ID: PPDR-001
+  Summary: PPDR applies when uninsured/self-pay billed charges are “substantially in excess” of expected charges in the GFE. CMS describes this threshold as at least $400 more than the GFE.
+  Prototype Logic: If actual_bill - GFE_expected_charge >= 400 for provider/facility → PPDR likely eligible....
+  System Action: Explain PPDR pathway; collect bill and GFE....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: PPDR-002
+  Summary: Eligibility is evaluated by specific provider/facility listed on the GFE, not necessarily the total episode globally.
+  Prototype Logic: Compare billed charges vs expected charges for the same listed provider/facility....
+  System Action: Avoid false positive from cross-provider aggregation....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: PPDR-003
+  Summary: If a replacement co-provider/co-facility substitutes for the original, compare against original GFE unless replacement issued a new compliant GFE.
+  Prototype Logic: If provider substitution occurred → check new GFE....
+  System Action: Human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: PPDR-004
+  Summary: Patient or authorized representative must initiate PPDR within 120 calendar days of receiving the initial bill containing charges substantially above the GFE.
+  Prototype Logic: If bill received date + 120 days not expired → PPDR available; if expired → human review for other remedies....
+  System Action: Show deadline....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: PPDR-005
+  Summary: Initiation notice must include item/service details, bill copy, GFE copy, provider/facility contact info if missing, state where services were furnished, and communication preference.
+  Prototype Logic: Generate checklist....
+  System Action: Collect documents before handoff....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: PPDR-006
+  Summary: If initiation notice is incomplete or item/service appears ineligible, patient gets 21 calendar days to supplement; accessibility/LEP issue can extend to 35 days.
+  Prototype Logic: If insufficiency notice received → calculate supplement deadline....
+  System Action: Deadline alert + checklist....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: PPDR-007
+  Summary: While PPDR is pending, provider/facility must not move the disputed bill into collections or threaten collection; if already in collections, collection efforts should cease; late fees must be suspended.
+  Prototype Logic: If collections threat/activity during PPDR → flag violation....
+  System Action: Escalate; generate complaint letter....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: PPDR-008
+  Summary: Provider/facility must not retaliate against the patient for using PPDR.
+  Prototype Logic: If patient reports care denial/threat linked to PPDR → urgent human review....
+  System Action: Escalate....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY J
+============================================================================================================================================
+
+Rule ID: STATE-ROUTE-001
+  Summary: If a specified state law applies, it can determine the recognized amount/out-of-network rate for NSA-covered items/services.
+  Prototype Logic: If state_law_applicable=true and plan/service/provider within scope → use state process....
+  System Action: Route to state rule table/human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: STATE-ROUTE-002
+  Summary: Self-funded ERISA plans may not be subject to state insurance law unless they opt in where allowed; state law applicability must be checked carefully.
+  Prototype Logic: If plan_type=self_funded and state rule invoked → verify opt-in or applicable mechanism....
+  System Action: Human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: STATE-ROUTE-003
+  Summary: Provider/facility disclosures must include applicable state balance-billing protections and contact information.
+  Prototype Logic: If state surprise billing law exists and disclosure lacks state info → flag disclosure issue....
+  System Action: Human review / complaint path....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: STATE-ROUTE-004
+  Summary: HHS complaint process may refer complaints to the appropriate state or federal authority where another entity has jurisdiction.
+  Prototype Logic: If issue is state-regulated provider/facility/issuer → route complaint to state DOI/agency as applicable....
+  System Action: Human-review queue....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+CATEGORY K
+============================================================================================================================================
+
+Rule ID: GROUND-001
+  Summary: Ground ambulance services are outside the scope of the No Surprises Act's balance-billing protections. Route to the ground ambulance node, not the NSA emergency (Table B) or non-emergency (Table C) rules.
+  Prototype Logic: If ambulance_involved=true and ambulance_type=ground -> route to ground ambulance node; do not apply NSA emergency/non-emergency balance-billing protections....
+  System Action: Route to ground ambulance node....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-002
+  Summary: Air ambulance and ground ambulance are treated very differently - air is NSA-protected, ground is not. Transport type must be confirmed before proceeding.
+  Prototype Logic: If ambulance_type=unknown -> ask member to confirm air vs ground. If air -> route to Table G (air ambulance). If ground -> continue ground node....
+  System Action: Confirm transport type; route to Table G if air....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-003
+  Summary: As of 2026 there is no comprehensive federal protection against ground ambulance balance billing. The GAPB Advisory Committee issued recommendations to Congress (March 2024) but no binding federal protection has been enacted. The system must not tell the member they are protected by the No Surprises Act.
+  Prototype Logic: For any ground ambulance balance bill -> do not state that federal NSA protection applies; explain the federal protection gap honestly....
+  System Action: Explain federal gap; do not assert NSA protection....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-004
+  Summary: Some states protect residents enrolled in state-regulated health plans from ground ambulance balance billing. State protections vary in scope, payment standard, and enforcement. If the member's state has such a law, the case is evaluated under it.
+  Prototype Logic: If state has a ground ambulance balance-billing protection law -> route to state-law module / human review for state-specific evaluation....
+  System Action: Route to state-law module / human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-005
+  Summary: State ground ambulance balance-billing laws generally do not apply to self-funded ERISA employer plans, which are not subject to state insurance regulation. Plan funding type must be confirmed before relying on a state protection.
+  Prototype Logic: If a state ground ambulance law is in scope and plan_funding_type=self_funded_erisa or plan_funding_type=unknown -> route to human review; do not assert state protection....
+  System Action: Human review; do not assert state protection for self-funded/unknown plans....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-006
+  Summary: For Medicare, Medicare Advantage, and Medicaid members, ground ambulance is a covered benefit and balance billing is constrained by program rules (e.g., Medicare assignment and limiting-charge rules). This is not the same as an unprotected commercial balance bill.
+  Prototype Logic: If insurance_situation in [medicare_only, medicare_advantage, medicaid] -> do not treat as unprotected commercial balance bill; route to program-specific explanation / human review....
+  System Action: Route to program-specific explanation / human review....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-007
+  Summary: Before treating a ground ambulance bill as a genuine uncovered balance, verify the plan actually adjudicated the claim. The 'balance' may reflect a denial, a processing error, or an unsubmitted claim - those are addressable through the explain/appeal workflows.
+  Prototype Logic: If denial_present=true, or amount_plan_paid is null/zero while insurance is present -> route to Workflow 1 (explain) / appeal before negotiation....
+  System Action: Route to claim explanation / appeal first....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-008
+  Summary: An uninsured or self-pay patient who received a Good Faith Estimate for a scheduled ground transport may have a PPDR pathway. Many ground transports are emergency and unscheduled, so a GFE may not have been required; absence of a GFE for an emergency transport is not itself a violation.
+  Prototype Logic: If insurance_situation=uninsured_self_pay -> if gfe_received=true, cross-reference Tables H/I (GFE/PPDR). If service was emergency/unscheduled, note GFE may not have been required....
+  System Action: Cross-reference GFE/PPDR rules....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-009
+  Summary: For an unprotected ground ambulance balance, the Medicare Ambulance Fee Schedule reference rate provides a negotiation anchor. The system surfaces the reference rate and the gap versus the billed amount. This is negotiation context, not a legal entitlement or a cap.
+  Prototype Logic: For an unprotected ground ambulance balance -> retrieve Medicare reference rate for the HCPCS and geography; present reference rate, billed amount, and the gap as a negotiation anchor....
+  System Action: Generate negotiation summary with reference rate....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-010
+  Summary: This advocacy logic runs upstream of MASA's ambulance gap-coverage benefit. After advocacy options are exhausted, a MASA member with a residual ground ambulance balance is routed to the MASA gap-coverage benefit / Medical Payments Advisor.
+  Prototype Logic: If is_masa_member=true and a residual ground ambulance balance remains after advocacy -> route to MASA gap coverage / Medical Payments Advisor....
+  System Action: Route to MASA gap coverage / Medical Payments Advisor....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+Rule ID: GROUND-011
+  Summary: Ground ambulance providers (municipal, fire-district, hospital-based, and some private) frequently offer financial hardship discounts and interest-free payment plans. For high-severity unprotected balances, screen for hardship relief alongside negotiation.
+  Prototype Logic: If unprotected ground ambulance balance and severity in [high, catastrophic] -> surface financial hardship / payment plan options alongside the negotiation summary....
+  System Action: Add financial hardship / payment plan options....
+  Deadline: None days (None)
+  QPA Dependent: 0
+  Status: draft
+  Source: e01_nsa_rules
+
+
+============================================================================================================================================
+DISTINCT SYSTEM_ACTION VALUES
+============================================================================================================================================
+
+1. Add complaint issue.
+2. Add complaint issue; not necessarily bill invalid by itself.
+3. Add financial hardship / payment plan options.
+4. Ask whether GFE was received; collect copy.
+5. Avoid false positive from cross-provider aggregation.
+6. Collect documents before handoff.
+7. Confirm transport type; route to Table G if air.
+8. Continue federal ruleset evaluation.
+9. Cross-reference GFE/PPDR rules.
+10. Deadline alert + checklist.
+11. Escalate.
+12. Escalate; generate complaint letter.
+13. Explain + collect EOB, bill, plan document.
+14. Explain + route to appeal template.
+15. Explain PPDR pathway; collect bill and GFE.
+16. Explain and collect evidence.
+17. Explain federal gap; do not assert NSA protection.
+18. Explain likely NSA protection.
+19. Explain likely balance-bill protection.
+20. Explain likely overbilling; collect EOB/bill.
+21. Explain; collect notice/consent if provider claims waiver.
+22. Flag invalid notice/consent.
+23. Flag likely unlawful balance bill.
+24. Generate appeal issue.
+25. Generate negotiation summary with reference rate.
+26. Generate records request.
+27. Human review / complaint path.
+28. Human review.
+29. Human review/status inquiry.
+30. Human review; do not assert state protection for self-funded/unknown plans.
+31. Human review; do not auto-conclude violation.
+32. Human review; flag.
+33. Human review; generate status inquiry.
+34. Human review; possible appeal.
+35. Human review; possible invalid consent.
+36. Human review; request EOB detail.
+37. Human review; request plan basis/QPA if available.
+38. Human-review queue.
+39. Route to MASA gap coverage / Medical Payments Advisor.
+40. Route to claim explanation / appeal first.
+41. Route to ground ambulance node.
+42. Route to human review unless all structured checks pass.
+43. Route to human review; do not make definitive NSA claim.
+44. Route to payment-rule review.
+45. Route to program-specific explanation / human review.
+46. Route to state rule table/human review.
+47. Route to state-law module / human review.
+48. Route to state-law module/human review.
+49. Show deadline.
+
+============================================================================================================================================
+SUMMARY STATISTICS
+============================================================================================================================================
+
+Total rules: 59
+  Category A: 4 rules
+  Category B: 6 rules
+  Category C: 5 rules
+  Category D: 5 rules
+  Category E: 2 rules
+  Category F: 3 rules
+  Category G: 4 rules
+  Category H: 7 rules
+  Category I: 8 rules
+  Category J: 4 rules
+  Category K: 11 rules
