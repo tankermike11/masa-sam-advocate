@@ -20,6 +20,9 @@ COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
 RUN mkdir -p /data
 
+# TEMPORARY — remove after seed deploy
+COPY data/pilot.db /app/backend/data/pilot.db
+
 ENV PYTHONPATH=/app
 ENV DATA_DIR=/data
 
