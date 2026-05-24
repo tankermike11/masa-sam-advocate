@@ -26,7 +26,7 @@ export interface StepDef {
   showIf?: (intake: Partial<IntakeSubmission>) => boolean
 }
 
-const BILLING_PATH = ['billing_error', 'clean_denial', 'partial_payment_underpayment']
+const BILLING_PATH = ['billing_error', 'billing_explanation', 'clean_denial', 'partial_payment_underpayment']
 const SURPRISE_PATH = ['surprise_out_of_network', 'balance_bill']
 const COLLECTIONS_PATH = ['collections_credit_impact']
 const CATAST_PATH = ['catastrophic_exposure']
@@ -46,6 +46,7 @@ export const ALL_STEPS: StepDef[] = [
       { label: 'Insurance denial',                  value: 'clean_denial',                 description: 'Your insurance denied a claim or service' },
       { label: 'Partial or underpayment',           value: 'partial_payment_underpayment', description: 'Your insurance paid less than expected' },
       { label: 'Balance bill',                      value: 'balance_bill',                 description: 'A provider billed you for amounts above what your insurance paid' },
+      { label: 'Help me understand my bill or EOB', value: 'billing_explanation',          description: 'You received a bill and want to know what the charges mean' },
       { label: 'Billing error',                     value: 'billing_error',                description: 'You suspect there\'s a mistake on your bill or EOB' },
       { label: 'Large / catastrophic bill',         value: 'catastrophic_exposure',        description: 'You\'re facing a very large medical bill' },
       { label: 'Debt collector contact',            value: 'collections_credit_impact',    description: 'A collector is contacting you about a medical bill' },

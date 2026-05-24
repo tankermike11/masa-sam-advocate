@@ -32,6 +32,7 @@ class ProblemType(str, Enum):
     partial_payment_underpayment = "partial_payment_underpayment"
     balance_bill = "balance_bill"
     billing_error = "billing_error"
+    billing_explanation = "billing_explanation"
     catastrophic_exposure = "catastrophic_exposure"
     collections_credit_impact = "collections_credit_impact"
 

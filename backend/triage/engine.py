@@ -43,6 +43,7 @@ _ROUTING: dict[str, tuple[str, list[str]]] = {
     ProblemType.partial_payment_underpayment: ("workflow_1", []),
     ProblemType.balance_bill:                 ("workflow_2", ["A", "B", "C", "D", "E", "J"]),
     ProblemType.billing_error:                ("workflow_1", []),
+    ProblemType.billing_explanation:          ("workflow_1", []),
     ProblemType.catastrophic_exposure:        ("workflow_1", []),
     ProblemType.collections_credit_impact:    ("workflow_4", []),
 }

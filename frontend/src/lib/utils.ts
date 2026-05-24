@@ -15,6 +15,7 @@ export const PROBLEM_LABELS: Record<string, string> = {
   partial_payment_underpayment: 'Underpayment or partial coverage',
   balance_bill:                 'Balance bill',
   billing_error:                'Billing error',
+  billing_explanation:          'Understand my bill / EOB',
   catastrophic_exposure:        'Large / catastrophic bill',
   collections_credit_impact:    'Collections or credit issue',
 }
