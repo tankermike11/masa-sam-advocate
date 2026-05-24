@@ -10,9 +10,10 @@ config/escalation_rules.yaml (cached per process).
 """
 
 from functools import lru_cache
-from pathlib import Path
 
 import yaml
+
+from backend.config_loader import _resolve_config
 from pydantic import BaseModel
 
 from backend.intake.schema import (
@@ -57,8 +58,7 @@ _STATE_LAW_PROBLEM_TYPES = frozenset({
 
 @lru_cache(maxsize=1)
 def _escalation_config() -> dict:
-    path = Path("config/escalation_rules.yaml")
-    with open(path) as f:
+    with open(_resolve_config("escalation_rules.yaml")) as f:
         return yaml.safe_load(f)
 
 

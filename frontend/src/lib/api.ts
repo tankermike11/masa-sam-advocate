@@ -3,10 +3,10 @@ import type {
   IntakeSubmission, QueueResponse, WorkflowResponse,
 } from './types'
 
-const BASE = '/api'
+const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, options)
+  const res = await fetch(`${API_BASE}${path}`, options)
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
     throw new Error(`${res.status}: ${text}`)

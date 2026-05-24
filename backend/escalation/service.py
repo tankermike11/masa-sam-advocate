@@ -13,9 +13,10 @@ from __future__ import annotations
 import json
 import logging
 from functools import lru_cache
-from pathlib import Path
 
 import yaml
+
+from backend.config_loader import _resolve_config
 from pydantic import BaseModel
 
 from backend.db.app_db import get_app_conn
@@ -43,8 +44,7 @@ class CaseNotFoundError(LookupError):
 
 @lru_cache(maxsize=1)
 def _load_pricing_config() -> dict:
-    path = Path("config/pricing_rules.yaml")
-    with open(path) as f:
+    with open(_resolve_config("pricing_rules.yaml")) as f:
         return yaml.safe_load(f)
 
 

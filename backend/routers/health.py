@@ -8,7 +8,7 @@ the live state of pilot.db, not a startup snapshot.
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from backend.db.preconditions import check_preconditions
+from backend.db.preconditions import PreconditionError, check_preconditions
 from backend.db.pilot import get_pilot_db_path
 from backend.db.app_db import get_app_db_path
 
@@ -29,9 +29,12 @@ class HealthResponse(BaseModel):
     precondition_tables: PreconditionCounts
 
 
-@router.get("/health", response_model=HealthResponse)
+@router.get("/health")
 def health_check():
-    counts = check_preconditions(get_pilot_db_path())
+    try:
+        counts = check_preconditions(get_pilot_db_path())
+    except PreconditionError:
+        return {"status": "degraded", "reason": "pilot.db not ready"}
     return HealthResponse(
         status="ok",
         version="0.1.0",
