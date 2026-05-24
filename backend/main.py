@@ -2,18 +2,20 @@
 FastAPI application entry point.
 
 Startup (lifespan):
-  1. check_preconditions() — logs a warning and continues in degraded mode if
-     pilot.db tables are missing; does not exit so the container stays alive
-     during the Railway volume seed window.
-  2. init_app_db() — creates data/app.db and applies schema (idempotent)
-  3. logs confirmed precondition row counts
+  1. If pilot.db is missing and PILOT_DB_GDRIVE_ID is set, starts a background
+     thread to download it from Google Drive. Server starts immediately and
+     returns degraded until the download completes.
+  2. check_preconditions() — logs a warning and continues in degraded mode if
+     pilot.db tables are missing.
+  3. init_app_db() — creates data/app.db and applies schema (idempotent)
 
 Run from repo root:
   uvicorn backend.main:app --reload
 """
 
 import logging
-import sys
+import os
+import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -36,10 +38,29 @@ logger = logging.getLogger(__name__)
 FRONTEND_DIST = Path(__file__).parent.parent / "frontend" / "dist"
 
 
+def _download_pilot_db(pilot_db_path: Path, gdrive_id: str) -> None:
+    try:
+        import gdown
+        logger.info(f"Downloading pilot.db from Google Drive to {pilot_db_path}...")
+        pilot_db_path.parent.mkdir(parents=True, exist_ok=True)
+        gdown.download(id=gdrive_id, output=str(pilot_db_path), quiet=False)
+        logger.info("pilot.db download complete.")
+    except Exception as e:
+        logger.error(f"Failed to download pilot.db: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     pilot_db_path = get_pilot_db_path()
-    logger.info(f"Checking pilot.db preconditions at: {pilot_db_path}")
+    gdrive_id = os.getenv("PILOT_DB_GDRIVE_ID")
+
+    if not pilot_db_path.exists() and gdrive_id:
+        thread = threading.Thread(
+            target=_download_pilot_db,
+            args=(pilot_db_path, gdrive_id),
+            daemon=True,
+        )
+        thread.start()
 
     try:
         counts = check_preconditions(pilot_db_path)
